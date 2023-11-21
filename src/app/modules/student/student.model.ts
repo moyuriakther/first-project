@@ -3,11 +3,13 @@ import {
   TGuardian,
   TLocalGuardian,
   TStudent,
-  TStudentMethods,
+  // TStudentMethods,
   TStudentModel,
   TUserName,
 } from './student.interface'
 import validator from 'validator'
+import bcrypt from 'bcrypt'
+import config from '../../config'
 
 const nameSchema = new Schema<TUserName>({
   firstName: {
@@ -78,11 +80,16 @@ const localGuardianSchema = new Schema<TLocalGuardian>({
 })
 
 //main schema
-const studentSchema = new Schema<TStudent, TStudentModel, TStudentMethods>({
+const studentSchema = new Schema<TStudent, TStudentModel>({
   id: {
     type: String,
     unique: true,
     required: [true, 'Can not accept duplicate id'],
+  },
+  password: {
+    type: String,
+    required: [true, 'password is required'],
+    maxlength: [15, 'password can not more then 15 character'],
   },
   name: { type: nameSchema, required: true },
   email: {
@@ -124,11 +131,35 @@ const studentSchema = new Schema<TStudent, TStudentModel, TStudentMethods>({
 })
 
 //creating a custom instance method
-studentSchema.methods.isUserExist = async function (id: string) {
+// studentSchema.methods.isUserExist = async function (id: string) {
+// const existingUser = await StudentModel.findOne({ id })
+//   return existingUser
+// }
+
+//creating a custom static method
+studentSchema.statics.isUserExist = async function (id: string) {
   const existingUser = await StudentModel.findOne({ id })
-  // console.log({ existingUser })
   return existingUser
 }
+
+//pre middleware and document middleware
+studentSchema.pre('save', async function (next) {
+  //hashing password and save to DB
+  // eslint-disable-next-line @typescript-eslint/no-this-alias
+  const user = this
+  user.password = await bcrypt.hash(
+    user.password,
+    Number(config.bcrypt_salt_round),
+  )
+  next()
+})
+//post middleware and document middleware
+studentSchema.post('save', async function (doc, next) {
+  doc.password = ''
+  next()
+})
+
+// query pre middleware
 
 //create model
 export const StudentModel = model<TStudent, TStudentModel>(
