@@ -1,61 +1,60 @@
-import { Request, Response } from 'express'
+import httpStatus from 'http-status'
+import { RequestHandler } from 'express'
 import { StudentServices } from './student.service'
-import studentValidationSchema from './student.validation'
+import sendResponse from '../../utils/sendResponse'
 
-const createStudent = async (req: Request, res: Response) => {
-  try {
-    const { student: studentData } = req.body
-    //validate data using zod
-    const zodParsedData = studentValidationSchema.parse(studentData)
-    const result = await StudentServices.createStudentInfoDB(zodParsedData)
-
-    res.status(200).json({
-      success: true,
-      message: 'Student Created Successfully',
-      data: result,
-    })
-    //send response
-  } catch (err: any) {
-    res.status(500).json({
-      success: false,
-      message: err.message || 'Something wrong',
-      error: err,
-    })
-  }
-}
-const getAllStudent = async (req: Request, res: Response) => {
+const getAllStudent: RequestHandler = async (req, res, next) => {
   try {
     //will call service function to send this data
     const result = await StudentServices.getAllStudentInfoFromDB()
-    res.status(200).json({
+    //send response
+    sendResponse(res, {
       success: true,
       message: 'Student Data Retrieved Successfully',
+      statusCode: httpStatus.OK,
       data: result,
     })
-    //send response
-  } catch (error) {
-    console.log(error)
+  } catch (err) {
+    next(err)
   }
 }
 
-const getSingleStudent = async (req: Request, res: Response) => {
+const getSingleStudent: RequestHandler = async (req, res, next) => {
   try {
     //will call service function to send this data
     const id = req.params.id
     const result = await StudentServices.getSingleStudentInfoFromDb(id)
-    res.status(200).json({
+    sendResponse(res, {
       success: true,
       message: 'Student Data Retrieved Successfully',
+      statusCode: httpStatus.OK,
       data: result,
     })
     //send response
-  } catch (error) {
-    console.log(error)
+  } catch (err) {
+    next(err)
+  }
+}
+
+const deleteStudent: RequestHandler = async (req, res, next) => {
+  try {
+    //will call service function to send this data
+    const id = req.params.id
+    const result = await StudentServices.deleteStudentInfoFromDb(id)
+    sendResponse(res, {
+      success: true,
+      message: 'Student Data deleted Successfully',
+      statusCode: httpStatus.OK,
+      data: result,
+    })
+    //send response
+  } catch (err) {
+    next(err)
   }
 }
 
 export const StudentControllers = {
-  createStudent,
   getAllStudent,
   getSingleStudent,
+  deleteStudent,
 }

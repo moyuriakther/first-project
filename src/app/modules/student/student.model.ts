@@ -8,8 +8,6 @@ import {
   TUserName,
 } from './student.interface'
 import validator from 'validator'
-import bcrypt from 'bcrypt'
-import config from '../../config'
 
 const nameSchema = new Schema<TUserName>({
   firstName: {
@@ -86,10 +84,11 @@ const studentSchema = new Schema<TStudent, TStudentModel>({
     unique: true,
     required: [true, 'Can not accept duplicate id'],
   },
-  password: {
-    type: String,
-    required: [true, 'password is required'],
-    maxlength: [15, 'password can not more then 15 character'],
+  user: {
+    type: Schema.Types.ObjectId,
+    required: [true, 'User id is required'],
+    unique: true,
+    ref: 'UserModel',
   },
   name: { type: nameSchema, required: true },
   email: {
@@ -127,14 +126,8 @@ const studentSchema = new Schema<TStudent, TStudentModel>({
   guardian: { type: guardianSchema, required: true },
   localGuardian: { type: localGuardianSchema, required: true },
   profileImg: { type: String },
-  isActive: { type: String, enum: ['active', 'blocked'], default: 'active' },
+  isDeleted: { type: Boolean, default: false },
 })
-
-//creating a custom instance method
-// studentSchema.methods.isUserExist = async function (id: string) {
-// const existingUser = await StudentModel.findOne({ id })
-//   return existingUser
-// }
 
 //creating a custom static method
 studentSchema.statics.isUserExist = async function (id: string) {
@@ -142,25 +135,19 @@ studentSchema.statics.isUserExist = async function (id: string) {
   return existingUser
 }
 
-//pre middleware and document middleware
-studentSchema.pre('save', async function (next) {
-  //hashing password and save to DB
-  // eslint-disable-next-line @typescript-eslint/no-this-alias
-  const user = this
-  user.password = await bcrypt.hash(
-    user.password,
-    Number(config.bcrypt_salt_round),
-  )
-  next()
-})
-//post middleware and document middleware
-studentSchema.post('save', async function (doc, next) {
-  doc.password = ''
-  next()
-})
-
 // query pre middleware
-
+studentSchema.pre('find', async function (next) {
+  this.find({ isDeleted: { $ne: true } }) //filter get all student data
+  next()
+})
+studentSchema.pre('findOne', async function (next) {
+  this.find({ isDeleted: { $ne: true } }) //filter get single student data
+  next()
+})
+studentSchema.pre('aggregate', function (next) {
+  this.pipeline().unshift({ $match: { isDeleted: { $ne: true } } }) //filter get single student data using aggregation
+  next()
+})
 //create model
 export const StudentModel = model<TStudent, TStudentModel>(
   'Student',
