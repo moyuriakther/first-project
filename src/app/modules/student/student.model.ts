@@ -78,56 +78,61 @@ const localGuardianSchema = new Schema<TLocalGuardian>({
 })
 
 //main schema
-const studentSchema = new Schema<TStudent, TStudentModel>({
-  id: {
-    type: String,
-    unique: true,
-    required: [true, 'Can not accept duplicate id'],
-  },
-  user: {
-    type: Schema.Types.ObjectId,
-    required: [true, 'User id is required'],
-    unique: true,
-    ref: 'UserModel',
-  },
-  name: { type: nameSchema, required: true },
-  email: {
-    type: String,
-    unique: true,
-    required: [true, 'Can not accept duplicate email'],
-    validate: { validator: (value: string) => validator.isEmail(value) },
-  },
-  gender: {
-    type: String,
-    enum: {
-      values: ['Male', 'Female', 'Other'],
-      message: '{VALUE} is not valid',
+const studentSchema = new Schema<TStudent, TStudentModel>(
+  {
+    id: {
+      type: String,
+      unique: true,
+      required: [true, 'Can not accept duplicate id'],
     },
-    required: true,
+    user: {
+      type: Schema.Types.ObjectId,
+      required: [true, 'User id is required'],
+      unique: true,
+      ref: 'UserModel',
+    },
+    name: { type: nameSchema, required: true },
+    email: {
+      type: String,
+      unique: true,
+      required: [true, 'Can not accept duplicate email'],
+      validate: { validator: (value: string) => validator.isEmail(value) },
+    },
+    gender: {
+      type: String,
+      enum: {
+        values: ['Male', 'Female', 'Other'],
+        message: '{VALUE} is not valid',
+      },
+      required: true,
+    },
+    dateOfBirth: { type: Date },
+    contactNumber: { type: String, required: [true, 'contact no is required'] },
+    emergencyContactNo: {
+      type: String,
+      required: [true, 'Emergency contact no is required'],
+    },
+    bloodGroup: {
+      type: String,
+      enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+    },
+    presentAddress: {
+      type: String,
+      required: [true, 'Present Address is required'],
+    },
+    permanentAddress: {
+      type: String,
+      required: [true, 'Permanent Address is required'],
+    },
+    guardian: { type: guardianSchema, required: true },
+    localGuardian: { type: localGuardianSchema, required: true },
+    profileImg: { type: String },
+    isDeleted: { type: Boolean, default: false },
   },
-  dateOfBirth: { type: String },
-  contactNumber: { type: String, required: [true, 'contact no is required'] },
-  emergencyContactNo: {
-    type: String,
-    required: [true, 'Emergency contact no is required'],
+  {
+    timestamps: true,
   },
-  bloodGroup: {
-    type: String,
-    enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
-  },
-  presentAddress: {
-    type: String,
-    required: [true, 'Present Address is required'],
-  },
-  permanentAddress: {
-    type: String,
-    required: [true, 'Permanent Address is required'],
-  },
-  guardian: { type: guardianSchema, required: true },
-  localGuardian: { type: localGuardianSchema, required: true },
-  profileImg: { type: String },
-  isDeleted: { type: Boolean, default: false },
-})
+)
 
 //creating a custom static method
 studentSchema.statics.isUserExist = async function (id: string) {

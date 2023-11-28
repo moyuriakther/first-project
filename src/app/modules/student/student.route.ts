@@ -1,6 +1,5 @@
 import express from 'express'
 import { StudentControllers } from './student.controller'
-// import { StudentControllers } from './student.controller.joi'
 
 const router = express.Router()
 

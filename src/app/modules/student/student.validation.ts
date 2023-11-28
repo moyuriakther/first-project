@@ -24,22 +24,25 @@ const localGuardianValidationSchema = z.object({
 })
 
 // Define main schema
-const studentValidationSchema = z.object({
-  id: z.string().min(1),
-  name: nameValidationSchema,
-  email: z.string().min(1).email(),
-  gender: z.enum(['Male', 'Female', 'Other']),
-  dateOfBirth: z.string().optional(),
-  contactNumber: z.string().min(1),
-  emergencyContactNo: z.string().min(1),
-  bloodGroup: z.enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']),
-  presentAddress: z.string().min(1),
-  permanentAddress: z.string().min(1),
-  guardian: guardianValidationSchema,
-  localGuardian: localGuardianValidationSchema,
-  profileImg: z.string().optional(),
-  isDeleted: z.boolean().default(false),
+const createStudentValidationSchema = z.object({
+  body: z.object({
+    password: z.string().max(15),
+    student: z.object({
+      name: nameValidationSchema,
+      email: z.string().min(1).email(),
+      gender: z.enum(['Male', 'Female', 'Other']),
+      dateOfBirth: z.date().optional(),
+      contactNumber: z.string().min(1),
+      emergencyContactNo: z.string().min(1),
+      bloodGroup: z.enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']),
+      presentAddress: z.string().min(1),
+      permanentAddress: z.string().min(1),
+      guardian: guardianValidationSchema,
+      localGuardian: localGuardianValidationSchema,
+      profileImg: z.string().optional(),
+    }),
+  }),
 })
 
 // Export the Zod schema
-export default studentValidationSchema
+export const studentValidations = { createStudentValidationSchema }
