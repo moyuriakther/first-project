@@ -1,13 +1,13 @@
 import express from 'express'
 import { academicSemesterControllers } from './academicSemester.controller'
-import validateUserData from '../../middleware/validateRequest'
+import validateRequest from '../../middleware/validateRequest'
 import { academicSemesterValidation } from './academicSemester.validation'
 
 const router = express.Router()
 
 router.post(
   '/create-academic-semester',
-  validateUserData(
+  validateRequest(
     academicSemesterValidation.createAcademicSemesterValidationSchema,
   ),
   academicSemesterControllers.createAcademicSemester,
@@ -20,7 +20,7 @@ router.get(
 )
 router.patch(
   '/:semesterId',
-  // validateUserData(
+  // validateRequest(
   //   academicSemesterValidation.updateAcademicSemesterValidationSchema,
   // ),
   academicSemesterControllers.findSemesterAndUpdateIntoDB,

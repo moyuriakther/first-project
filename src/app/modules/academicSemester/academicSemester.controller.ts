@@ -38,13 +38,12 @@ const getSingleAcademicSemester = catchAsync(async (req, res) => {
 })
 
 const findSemesterAndUpdateIntoDB = catchAsync(async (req, res) => {
-  console.log(req.params)
   const { semesterId } = req.params
   const result = await academicSemesterServices.findAcademicSemesterAndUpdate(
     semesterId,
     req.body,
   )
-  console.log({ result })
+
   sendResponse(res, {
     success: true,
     message: 'Update Academic Semester Data Successfully',
