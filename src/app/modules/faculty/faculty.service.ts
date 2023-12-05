@@ -8,7 +8,7 @@ import { TFaculty } from './faculty.interface'
 import { facultySearchableFields } from './faculty.constant'
 
 const getAllFacultyInfoFromDB = async (query: Record<string, unknown>) => {
-  const studentQuery = new QueryBuilder(
+  const facultyQuery = new QueryBuilder(
     FacultyModel.find().populate('academicDepartment'),
     query,
   )
@@ -18,14 +18,12 @@ const getAllFacultyInfoFromDB = async (query: Record<string, unknown>) => {
     .paginate()
     .fields()
 
-  const result = await studentQuery.modelQuery
+  const result = await facultyQuery.modelQuery
   return result
 }
 
 const getSingleFacultyInfoFromDb = async (id: string) => {
-  const result = await FacultyModel.findOne({ id: id }).populate(
-    'academicDepartment',
-  )
+  const result = await FacultyModel.findById(id).populate('academicDepartment')
 
   return result
 }
@@ -42,14 +40,10 @@ const updateFacultyIntoDB = async (id: string, payload: Partial<TFaculty>) => {
     }
   }
 
-  const result = await FacultyModel.findOneAndUpdate(
-    { id },
-    modifiedUpdatedData,
-    {
-      new: true,
-      runValidators: true,
-    },
-  )
+  const result = await FacultyModel.findByIdAndUpdate(id, modifiedUpdatedData, {
+    new: true,
+    runValidators: true,
+  })
   return result
 }
 
@@ -61,16 +55,17 @@ const deleteFacultyInfoFromDb = async (id: string) => {
   const session = await mongoose.startSession()
   try {
     session.startTransaction()
-    const deleteStudent = await FacultyModel.findOneAndUpdate(
+    const deleteFaculty = await FacultyModel.findByIdAndUpdate(
       { id },
       { isDeleted: true },
       { new: true, session },
     )
-    if (!deleteStudent) {
+    if (!deleteFaculty) {
       throw new AppError(httpStatus.BAD_REQUEST, 'Failed to delete Faculty ')
     }
-    const deleteUser = await UserModel.findOneAndUpdate(
-      { id },
+    const userId = deleteFaculty.user
+    const deleteUser = await UserModel.findByIdAndUpdate(
+      userId,
       { isDeleted: true },
       { new: true, session },
     )
@@ -79,11 +74,11 @@ const deleteFacultyInfoFromDb = async (id: string) => {
     }
     await session.commitTransaction()
     await session.endSession()
-    return deleteStudent
+    return deleteFaculty
   } catch (error) {
     await session.abortTransaction()
     await session.endSession()
-    throw new Error('Failed to Delete Student')
+    throw new Error('Failed to Delete Faculty')
   }
 }
 

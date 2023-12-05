@@ -17,8 +17,8 @@ const getAllFaculty = catchAsync(async (req, res) => {
 
 const getSingleFaculty = catchAsync(async (req, res) => {
   //will call service function to send this data
-  const { facultyId } = req.params
-  const result = await FacultyServices.getSingleFacultyInfoFromDb(facultyId)
+  const { id } = req.params
+  const result = await FacultyServices.getSingleFacultyInfoFromDb(id)
   sendResponse(res, {
     success: true,
     message: 'Faculty Data Retrieved Successfully',
@@ -28,9 +28,9 @@ const getSingleFaculty = catchAsync(async (req, res) => {
   //send response
 })
 const updateFaculty = catchAsync(async (req, res) => {
-  const { facultyId } = req.params
+  const { id } = req.params
   const { faculty } = req.body
-  const result = await FacultyServices.updateFacultyIntoDB(facultyId, faculty)
+  const result = await FacultyServices.updateFacultyIntoDB(id, faculty)
   sendResponse(res, {
     success: true,
     message: 'Updated Faculty Data Successfully',
@@ -42,8 +42,8 @@ const updateFaculty = catchAsync(async (req, res) => {
 
 const deleteFaculty = catchAsync(async (req, res) => {
   //will call service function to send this data
-  const { facultyId } = req.params
-  const result = await FacultyServices.deleteFacultyInfoFromDb(facultyId)
+  const { id } = req.params
+  const result = await FacultyServices.deleteFacultyInfoFromDb(id)
   sendResponse(res, {
     success: true,
     message: 'Faculty Data deleted Successfully',

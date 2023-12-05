@@ -13,9 +13,9 @@ router.post(
   academicFacultyControllers.createAcademicFaculty,
 )
 router.get('/', academicFacultyControllers.getAllAcademicFaculty)
-router.get('/:facultyId', academicFacultyControllers.getSingleAcademicFaculty)
+router.get('/:adminId', academicFacultyControllers.getSingleAcademicFaculty)
 router.patch(
-  '/:facultyId',
+  '/:adminId',
   validateRequest(
     academicFacultyValidation.updateAcademicFacultyValidationSchema,
   ),

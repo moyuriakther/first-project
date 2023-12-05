@@ -17,8 +17,8 @@ const getAllStudent = catchAsync(async (req, res) => {
 
 const getSingleStudent = catchAsync(async (req, res) => {
   //will call service function to send this data
-  const { studentId } = req.params
-  const result = await StudentServices.getSingleStudentInfoFromDb(studentId)
+  const { id } = req.params
+  const result = await StudentServices.getSingleStudentInfoFromDb(id)
   sendResponse(res, {
     success: true,
     message: 'Student Data Retrieved Successfully',
@@ -28,9 +28,9 @@ const getSingleStudent = catchAsync(async (req, res) => {
   //send response
 })
 const updateStudent = catchAsync(async (req, res) => {
-  const { studentId } = req.params
+  const { id } = req.params
   const { student } = req.body
-  const result = await StudentServices.updateStudentIntoDB(studentId, student)
+  const result = await StudentServices.updateStudentIntoDB(id, student)
   sendResponse(res, {
     success: true,
     message: 'Updated Student Data Successfully',
@@ -42,8 +42,8 @@ const updateStudent = catchAsync(async (req, res) => {
 
 const deleteStudent = catchAsync(async (req, res) => {
   //will call service function to send this data
-  const { studentId } = req.params
-  const result = await StudentServices.deleteStudentInfoFromDb(studentId)
+  const { id } = req.params
+  const result = await StudentServices.deleteStudentInfoFromDb(id)
   sendResponse(res, {
     success: true,
     message: 'Student Data deleted Successfully',
