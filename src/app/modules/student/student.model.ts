@@ -144,6 +144,11 @@ const studentSchema = new Schema<TStudent, TStudentModel>(
   },
 )
 
+//virtual
+studentSchema.virtual('fullName').get(function () {
+  return `${this?.name?.firstName} ${this?.name?.middleName} ${this?.name?.lastName}`
+})
+
 //creating a custom static method
 studentSchema.statics.isUserExist = async function (id: string) {
   const existingUser = await StudentModel.findOne({ id })

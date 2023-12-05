@@ -5,9 +5,12 @@ import { TStudent } from '../student/student.interface'
 import { StudentModel } from '../student/student.model'
 import { TUser } from './user.interface'
 import { UserModel } from './user.model'
-import { generateStudentId } from './user.utils'
+import { generateFacultyId, generateStudentId } from './user.utils'
 import AppError from '../../errors/AppError'
 import mongoose from 'mongoose'
+import { TFaculty } from '../faculty/faculty.interface'
+import { AcademicDepartmentModel } from '../academicDepartment/academicDepartment.model'
+import { FacultyModel } from '../faculty/faculty.model'
 
 const createStudentInfoDB = async (password: string, payload: TStudent) => {
   const userData: Partial<TUser> = {}
@@ -54,6 +57,52 @@ const createStudentInfoDB = async (password: string, payload: TStudent) => {
     throw new Error('Failed to Create Student')
   }
 }
+const createFacultyIntoDB = async (password: string, payload: TFaculty) => {
+  const facultyData: Partial<TUser> = {}
+  // if password not given use default password
+
+  facultyData.password = password || (config.default_pass as string)
+  facultyData.role = 'faculty' //set faculty role
+
+  // first academic semester info
+  const academicDepartment = await AcademicDepartmentModel.findById(
+    payload.academicDepartment,
+  )
+
+  if (!academicDepartment) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Academic Department not found')
+  }
+
+  const session = await mongoose.startSession()
+
+  try {
+    session.startTransaction()
+    facultyData.id = await generateFacultyId() //set generated id
+    //create a user
+    const newUser = await UserModel.create([facultyData], { session }) // built in static method
+    if (!newUser) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Failed to create user')
+    }
+    // create a faculty
+    if (newUser.length) {
+      //set id, _id as user to faculty data
+      payload.id = newUser[0].id
+      payload.user = newUser[0]._id //reference id
+      const newFaculty = await FacultyModel.create([payload], { session })
+      if (!newFaculty) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'Failed to create Faculty')
+      }
+      await session.commitTransaction()
+      await session.endSession()
+      return newFaculty
+    }
+  } catch (error) {
+    await session.abortTransaction()
+    await session.endSession()
+    throw new Error('Failed to Create Faculty')
+  }
+}
 export const UserServices = {
   createStudentInfoDB,
+  createFacultyIntoDB,
 }
