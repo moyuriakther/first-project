@@ -115,7 +115,6 @@ const createAdminIntoDB = async (password: string, payload: TAdmin) => {
   adminData.password = password || (config.default_pass as string)
   adminData.role = 'admin' //set admin role
   const session = await mongoose.startSession()
-
   try {
     session.startTransaction()
     adminData.id = await generateAdminId() //set generated id
