@@ -5,14 +5,17 @@ import { FacultyServices } from './faculty.service'
 
 const getAllFaculty = catchAsync(async (req, res) => {
   //will call service function to send this data
-  const result = await FacultyServices.getAllFacultyInfoFromDB(req.query)
-  //send response
-  sendResponse(res, {
-    success: true,
-    message: 'Faculty Data Retrieved Successfully',
-    statusCode: httpStatus.OK,
-    data: result,
-  })
+  const { userId } = req.user
+
+  console.log('test', userId)
+  // const result = await FacultyServices.getAllFacultyInfoFromDB(req.query)
+  // //send response
+  // sendResponse(res, {
+  //   success: true,
+  //   message: 'Faculty Data Retrieved Successfully',
+  //   statusCode: httpStatus.OK,
+  //   data: result,
+  // })
 })
 
 const getSingleFaculty = catchAsync(async (req, res) => {
