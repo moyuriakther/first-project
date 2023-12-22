@@ -1,76 +1,72 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextFunction, Request, Response } from 'express'
-import catchAsync from '../utils/catchAsync'
-import AppError from '../errors/AppError'
-import httpStatus from 'http-status'
-import jwt, { JwtPayload } from 'jsonwebtoken'
-import config from '../config'
-import { TUserRole } from '../modules/user/user.interface'
+import { NextFunction, Request, Response } from 'express';
+import httpStatus from 'http-status';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import config from '../config';
+import AppError from '../errors/AppError';
+import { TUserRole } from '../modules/user/user.interface';
+import catchAsync from '../utils/catchAsync';
+import { UserModel } from '../modules/user/user.model';
+
+
 
 const auth = (...requiredRoles: TUserRole[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    // Check token sent from client
-    const token = req.headers.authorization
+    const token = req.headers.authorization;
 
+    // checking if the token is missing
     if (!token) {
-      throw new AppError(httpStatus.UNAUTHORIZED, 'You are unauthorized')
+      throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized!');
     }
 
-    // Check if the token is verified
-    jwt.verify(
+    // checking if the given token is valid
+    const decoded = jwt.verify(
       token,
       config.jwt_access_secret as string,
-      function (err, decoded) {
-        if (err) {
-          throw new AppError(httpStatus.UNAUTHORIZED, 'You are unauthorized')
-        }
+    ) as JwtPayload;
 
-        if (decoded) {
-          // Use type assertion to inform TypeScript about the 'user' property
-          ;(req as any).user = decoded as JwtPayload
-        }
-        next()
-      },
-    )
-  })
-}
+    const { role, userId, iat } = decoded;
 
-export default auth
+    // checking if the user is exist
+    const user = await UserModel.isUserExistByCustomId(userId);
 
-// import { NextFunction, Request, Response } from 'express'
-// import catchAsync from '../utils/catchAsync'
-// import AppError from '../errors/AppError'
-// import httpStatus from 'http-status'
-// import jwt, { JwtPayload } from 'jsonwebtoken'
-// import config from '../config'
-// import { TUserRole } from '../modules/user/user.interface'
+    if (!user) {
+      throw new AppError(httpStatus.NOT_FOUND, 'This user is not found !');
+    }
+    // checking if the user is already deleted
 
-// const auth = (...requiredRoles: TUserRole[]) => {
-//   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-//     //check token send from client
-//     const token = req.headers.authorization
+    const isDeleted = user?.isDeleted;
 
-//     if (!token) {
-//       throw new AppError(httpStatus.UNAUTHORIZED, 'You are unauthorized')
-//     }
-//     // check token is verify
-//     jwt.verify(
-//       token,
-//       config.jwt_access_secret as string,
-//       function (err, decoded) {
-//         if (err) {
-//           throw new AppError(httpStatus.UNAUTHORIZED, 'You are unauthorized')
-//         }
-//         // console.log((req = decoded as JwtPayload), 'auth')
-//         console.log(decoded)
-//         // req.user = decoded as JwtPayload
-//         if (decoded) {
-//           req.user = decoded as JwtPayload // Assign within the if block
-//         }
+    if (isDeleted) {
+      throw new AppError(httpStatus.FORBIDDEN, 'This user is deleted !');
+    }
 
-//         next()
-//       },
-//     )
-//   })
-// }
-// export default auth
+    // checking if the user is blocked
+    const userStatus = user?.status;
+
+    if (userStatus === 'blocked') {
+      throw new AppError(httpStatus.FORBIDDEN, 'This user is blocked ! !');
+    }
+
+    if (
+      user.passwordChangedAt &&
+      UserModel.isJWTIssuedBeforePasswordChanged(
+        user.passwordChangedAt,
+        iat as number,
+      )
+    ) {
+      throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized !');
+    }
+
+    if (requiredRoles && !requiredRoles.includes(role)) {
+      throw new AppError(
+        httpStatus.UNAUTHORIZED,
+        'You are Unauthorized To Access This Route!',
+      );
+    }
+
+    req.user = decoded as JwtPayload;
+    next();
+  });
+};
+
+export default auth;

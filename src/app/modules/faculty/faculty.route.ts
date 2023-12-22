@@ -8,13 +8,14 @@ import { USER_ROLE } from '../user/user.constrant'
 const router = express.Router()
 
 //will call controller function
-router.get('/', auth(USER_ROLE.admin), FacultyControllers.getAllFaculty)
-router.get('/:id', FacultyControllers.getSingleFaculty)
+router.get('/', auth(USER_ROLE.admin, USER_ROLE.faculty), FacultyControllers.getAllFaculty)
+router.get('/:id', auth(USER_ROLE.admin), FacultyControllers.getSingleFaculty)
 router.patch(
   '/:id',
+  auth(USER_ROLE.admin),
   validateRequest(facultyValidations.updateFacultyValidationSchema),
   FacultyControllers.updateFaculty,
 )
-router.delete('/:id', FacultyControllers.deleteFaculty)
+router.delete('/:id',  auth(USER_ROLE.admin), FacultyControllers.deleteFaculty)
 
 export const FacultyRoutes = router
