@@ -17,12 +17,14 @@ import { AcademicDepartmentModel } from '../academicDepartment/academicDepartmen
 import { FacultyModel } from '../faculty/faculty.model'
 import { TAdmin } from '../admin/admin.interface'
 import { AdminModel } from '../admin/admin.model'
+import { sendImgToCloudinary } from '../../utils/sendImgToCloudinary';
 
-const createStudentInfoDB = async (password: string, payload: TStudent) => {
+const createStudentInfoDB = async (file: any, password: string, payload: TStudent) => {
   const userData: Partial<TUser> = {}
   // if password not given use default password
   userData.password = password || (config.default_pass as string)
   userData.role = 'student' //set student role
+  userData.email = payload.email
 
   // first academic semester info
   const admissionSemester = await AcademicSemesterModel.findById(
@@ -34,10 +36,14 @@ const createStudentInfoDB = async (password: string, payload: TStudent) => {
   }
 
   const session = await mongoose.startSession()
-
   try {
     session.startTransaction()
     userData.id = await generateStudentId(admissionSemester) //set generated id
+
+    const path = file?.path
+    const imageName = `${userData?.id}${payload.name.firstName}`
+    //send image to cloudinary
+    const {secure_url} = await sendImgToCloudinary(path,imageName )
     //create a user
     const newUser = await UserModel.create([userData], { session }) // built in static method
 
@@ -49,6 +55,8 @@ const createStudentInfoDB = async (password: string, payload: TStudent) => {
       //set id, _id as user to student data
       payload.id = newUser[0].id
       payload.user = newUser[0]._id //reference id
+      payload.profileImg = secure_url; // set profile image link
+
       const newStudent = await StudentModel.create([payload], { session })
       if (!newStudent) {
         throw new AppError(httpStatus.BAD_REQUEST, 'Failed to create student')
@@ -63,12 +71,13 @@ const createStudentInfoDB = async (password: string, payload: TStudent) => {
     throw new Error('Failed to Create Student')
   }
 }
-const createFacultyIntoDB = async (password: string, payload: TFaculty) => {
+const createFacultyIntoDB = async (file: any, password: string, payload: TFaculty) => {
   const facultyData: Partial<TUser> = {}
   // if password not given use default password
 
   facultyData.password = password || (config.default_pass as string)
   facultyData.role = 'faculty' //set faculty role
+  facultyData.email = payload.email
 
   // first academic semester info
   const academicDepartment = await AcademicDepartmentModel.findById(
@@ -84,6 +93,12 @@ const createFacultyIntoDB = async (password: string, payload: TFaculty) => {
   try {
     session.startTransaction()
     facultyData.id = await generateFacultyId() //set generated id
+   
+    const path = file?.path
+    const imageName = `${facultyData?.id}${payload.name.firstName}`
+    //send image to cloudinary
+    const {secure_url} = await sendImgToCloudinary(path,imageName )
+   
     //create a user
     const newUser = await UserModel.create([facultyData], { session }) // built in static method
     if (!newUser) {
@@ -94,6 +109,8 @@ const createFacultyIntoDB = async (password: string, payload: TFaculty) => {
       //set id, _id as user to faculty data
       payload.id = newUser[0].id
       payload.user = newUser[0]._id //reference id
+      payload.profileImg = secure_url; // set profile image link
+
       const newFaculty = await FacultyModel.create([payload], { session })
       if (!newFaculty) {
         throw new AppError(httpStatus.BAD_REQUEST, 'Failed to create Faculty')
@@ -108,16 +125,24 @@ const createFacultyIntoDB = async (password: string, payload: TFaculty) => {
     throw new Error('Failed to Create Faculty')
   }
 }
-const createAdminIntoDB = async (password: string, payload: TAdmin) => {
+const createAdminIntoDB = async (file: any, password: string, payload: TAdmin) => {
   const adminData: Partial<TUser> = {}
   // if password not given use default password
   // console.log(payload, password)
   adminData.password = password || (config.default_pass as string)
   adminData.role = 'admin' //set admin role
+  adminData.email = payload.email //set admin email
+
   const session = await mongoose.startSession()
   try {
     session.startTransaction()
     adminData.id = await generateAdminId() //set generated id
+
+    const path = file?.path
+    const imageName = `${adminData?.id}${payload.name.firstName}`
+    //send image to cloudinary
+    const {secure_url} = await sendImgToCloudinary(path,imageName )
+
     //create a user
     const newUser = await UserModel.create([adminData], { session }) // built in static method
 
@@ -129,6 +154,8 @@ const createAdminIntoDB = async (password: string, payload: TAdmin) => {
       //set id, _id as user to faculty data
       payload.id = newUser[0].id
       payload.user = newUser[0]._id //reference id
+      payload.profileImg = secure_url; // set profile image link
+      
       const newAdmin = await AdminModel.create([payload], { session })
 
       if (!newAdmin) {
@@ -144,8 +171,29 @@ const createAdminIntoDB = async (password: string, payload: TAdmin) => {
     throw new Error('Failed to Create Admin')
   }
 }
+const changeStatus = async (id: string, payload: {status: string}) =>{
+  const result = await UserModel.findByIdAndUpdate(id, payload, {
+    new: true,
+  });
+  return result;
+}
+const getMe = async (id: string, role: string) =>{
+  let result = null
+  if(role === 'student'){
+    result = await StudentModel.findOne({id}).populate('user')
+  }
+  if(role === 'faculty'){
+    result = await FacultyModel.findOne({id}).populate('user')
+  }
+  if(role === 'admin'){
+    result = await AdminModel.findOne({id}).populate('user')
+  }
+  return result
+}
 export const UserServices = {
   createStudentInfoDB,
   createFacultyIntoDB,
   createAdminIntoDB,
+  changeStatus,
+  getMe
 }

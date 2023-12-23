@@ -10,7 +10,7 @@ const createNameValidationSchema = z.object({
 // Define main schema
 const createFacultyValidationSchema = z.object({
   body: z.object({
-    password: z.string().max(15),
+    password: z.string().max(15).optional(),
     faculty: z.object({
       name: createNameValidationSchema,
       email: z.string().min(1).email(),
@@ -21,7 +21,6 @@ const createFacultyValidationSchema = z.object({
       bloodGroup: z.enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']),
       presentAddress: z.string().min(1),
       permanentAddress: z.string().min(1),
-      profileImg: z.string().optional(),
       academicDepartment: z.string(),
     }),
   }),
