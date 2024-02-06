@@ -30,7 +30,7 @@ const userSchema = new Schema<TUser, IUserModel>(
     role: {
       type: String,
       enum: {
-        values: ['student', 'faculty', 'admin'],
+        values: ['student', 'faculty', 'admin', 'superAdmin'],
         message: '{VALUES} is not valid',
       },
     },
@@ -92,7 +92,7 @@ userSchema.statics.isJWTIssuedBeforePasswordChanged = function (
 ) {
   const passwordChangedTime =
     new Date(passwordChangedTimestamp).getTime() / 1000
-    console.log(passwordChangedTime > jwtIssuedTimestamp)
+  console.log(passwordChangedTime > jwtIssuedTimestamp)
   return passwordChangedTime > jwtIssuedTimestamp
 }
 

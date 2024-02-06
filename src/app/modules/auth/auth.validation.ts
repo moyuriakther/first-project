@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { UserStatus } from '../user/user.constrant';
+// import { UserStatus } from '../user/user.constrant';
 
 const userLoginValidationSchema = z.object({
   body: z.object({
@@ -17,20 +17,17 @@ const changePasswordValidationSchema = z.object({
 const refreshTokenValidationSchema = z.object({
   cookies: z.object({
     refreshToken: z.string({ required_error: 'Refresh Token is required' }),
-    
   }),
 })
 const forgetPasswordValidationSchema = z.object({
   body: z.object({
     id: z.string({ required_error: 'User Id is required' }),
-    
   }),
 })
 const resetPasswordValidationSchema = z.object({
   body: z.object({
     id: z.string({ required_error: 'User Id is required' }),
     newPassword: z.string({ required_error: 'New Password is required' }),
-    
   }),
 })
 

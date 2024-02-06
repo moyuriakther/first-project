@@ -36,7 +36,7 @@ const adminSchema = new Schema<TAdmin, TAdminModel>(
     },
     designation: {
       type: String,
-      required: [true, 'Designation id is required'],
+      required: [true, 'Designation  is required'],
     },
     name: { type: nameSchema, required: true },
     gender: {
@@ -71,7 +71,7 @@ const adminSchema = new Schema<TAdmin, TAdminModel>(
       type: String,
       required: [true, 'Permanent Address is required'],
     },
-    profileImg: { type: String },
+    profileImg: { type: String, default: '' },
     isDeleted: { type: Boolean, default: false },
   },
   {

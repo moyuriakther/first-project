@@ -43,6 +43,7 @@ const courseSchema = new Schema<TCourse>(
 
 export const CourseModel = model<TCourse>('Course', courseSchema)
 
+
 const courseFacultiesSchema = new Schema<TCourseFaculty>(
   {
     course: { type: Schema.Types.ObjectId, ref: 'Course', unique: true },

@@ -20,7 +20,8 @@ const getAllOfferedCourse = catchAsync(async (req, res) => {
     success: true,
     message: 'Get All Offered course Successfully',
     statusCode: httpStatus.OK,
-    data: result,
+    meta: result.meta,
+    data: result.result,
   })
 })
 const getSingleOfferedCourse = catchAsync(async (req, res) => {

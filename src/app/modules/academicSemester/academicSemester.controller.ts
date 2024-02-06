@@ -16,12 +16,15 @@ const createAcademicSemester = catchAsync(async (req, res) => {
 })
 
 const getAllAcademicSemesters = catchAsync(async (req, res) => {
-  const result = await academicSemesterServices.getAllAcademicSemestersFromDB()
+  const result = await academicSemesterServices.getAllAcademicSemestersFromDB(
+    req.query,
+  )
   sendResponse(res, {
     success: true,
     message: 'Get All Academic Semester Successfully',
     statusCode: httpStatus.OK,
-    data: result,
+    meta: result.meta,
+    data: result.result,
   })
 })
 

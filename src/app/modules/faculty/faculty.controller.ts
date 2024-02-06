@@ -4,14 +4,14 @@ import catchAsync from '../../utils/catchAsync'
 import { FacultyServices } from './faculty.service'
 
 const getAllFaculty = catchAsync(async (req, res) => {
-  
   const result = await FacultyServices.getAllFacultyInfoFromDB(req.query)
   //send response
   sendResponse(res, {
     success: true,
     message: 'Faculty Data Retrieved Successfully',
     statusCode: httpStatus.OK,
-    data: result,
+    meta: result.meta,
+    data: result.result,
   })
 })
 
