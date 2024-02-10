@@ -125,6 +125,7 @@ const getFacultiesWithCourseFromDb = async (courseId: string) => {
   const result = await CourseFacultyModel.findOne({
     course: courseId,
   }).populate('faculties')
+  console.log(result, 'course with faculty')
   return result
 }
 const removeFacultiesFromDB = async (
@@ -139,7 +140,6 @@ const removeFacultiesFromDB = async (
     },
     { new: true },
   )
-
   return result
 }
 

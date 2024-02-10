@@ -81,6 +81,7 @@ const getFacultiesWithCourse = catchAsync(async (req, res) => {
   console.log(courseId)
   //will call service function to send this data
   const result = await CourseServices.getFacultiesWithCourseFromDb(courseId)
+  console.log(result, 'controller')
   sendResponse(res, {
     success: true,
     message: 'Faculties Get With Course Successfully',
